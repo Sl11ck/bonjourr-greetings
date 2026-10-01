@@ -113,10 +113,6 @@
       "text": "How's it going, {name}?",
       "emoji": "👂"
     },
-    "let-s-noodle": {
-      "text": "Let's noodle",
-      "emoji": "🍜"
-    },
     "moonlit-browse": {
       "text": "Moonlit browse?",
       "emoji": "🌝"
@@ -232,7 +228,7 @@
         "how-are-things",
         "greetings-whoever-you-are",
         "hi-how-are-you",
-        "let-s-noodle",
+        "good-afternoon",
         "cuppa-whilst-browsing",
         "afternoon",
         "back-at-it",
