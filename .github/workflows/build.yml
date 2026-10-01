@@ -1,10 +1,15 @@
-# On every change to main: rebuild greetings.css (+ any new emoji) from src/config.json,
+# On every change to main: read greetings.csv, look up any new emoji, rebuild greetings.css,
 # commit the result, and print the exact @import line for Bonjourr in the run summary.
 name: Build
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      refresh:
+        description: Look up every emoji again (picks up newer designs or a changed precedence)
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -20,18 +25,19 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: src/requirements.txt
-      - uses: actions/cache@v4          # Microsoft's source animations, so they download once
+      - uses: actions/cache@v4          # downloaded Microsoft images + repo indexes
         with:
           path: src/.cache
-          key: emoji-src-${{ hashFiles('src/config.json', 'src/build.py') }}
+          key: emoji-src-${{ hashFiles('src/emoji-lock.json') }}
           restore-keys: emoji-src-
       - run: pip install -r src/requirements.txt
-      - run: python src/build.py        # stops here, changing nothing, if config.json has a mistake
+      - name: Build                     # stops here, changing nothing, if greetings.csv has a mistake
+        run: python src/build.py ${{ inputs.refresh && '--refresh' || '' }}
       - name: Commit the build and print the import line
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A greetings.css PREVIEW.md emoji
+          git add -A greetings.css PREVIEW.md emoji src/emoji-lock.json
           if git diff --cached --quiet; then
             echo "Build output unchanged."
           else
@@ -48,4 +54,5 @@ jobs:
             echo "$line"
             echo '```'
             echo "This link is pinned to this exact build, so browsers cache it permanently (no flicker on new tabs)."
+            echo "See [PREVIEW.md](https://github.com/${GITHUB_REPOSITORY}/blob/${sha}/PREVIEW.md) for every greeting and its chances."
           } >> "$GITHUB_STEP_SUMMARY"
