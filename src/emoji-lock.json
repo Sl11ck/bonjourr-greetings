@@ -7,15 +7,20 @@
    ],
    "3d": [
     "emojipedia",
-    "microsoft"
+    "microsoft",
+    "fluent-flags"
    ],
    "2d": [
     "emojipedia",
     "microsoft"
+   ],
+   "google": [
+    "noto",
+    "emojipedia"
    ]
   }
  },
- "☕|3d-animated 3d 2d system": {
+ "☕|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -23,14 +28,14 @@
   "path": "assets/Hot beverage/animated/hot_beverage_animated.png",
   "name": "hot-beverage"
  },
- "✨|3d-animated 3d 2d system": {
+ "✨|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/sparkles_2728.png",
   "px": 512
  },
- "🌝|3d-animated 3d 2d system": {
+ "🌝|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -38,14 +43,14 @@
   "path": "assets/Full moon face/animated/full_moon_face_animated.png",
   "name": "full-moon-face"
  },
- "🍕|3d-animated 3d 2d system": {
+ "🍕|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/pizza_1f355.png",
   "px": 512
  },
- "🎉|3d-animated 3d 2d system": {
+ "🎉|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -53,7 +58,7 @@
   "path": "assets/Party popper/animated/party_popper_animated.png",
   "name": "party-popper"
  },
- "🐦|3d-animated 3d 2d system": {
+ "🐦|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -61,7 +66,7 @@
   "path": "assets/Bird/animated/bird_animated.png",
   "name": "bird"
  },
- "👀|3d-animated 3d 2d system": {
+ "👀|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -69,7 +74,7 @@
   "path": "assets/Eyes/animated/eyes_animated.png",
   "name": "eyes"
  },
- "👂|3d-animated 3d 2d system": {
+ "👂|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -77,35 +82,35 @@
   "path": "assets/Ear/Default/animated/ear_animated_default.png",
   "name": "ear"
  },
- "💼|3d-animated 3d 2d system": {
+ "💼|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/briefcase_1f4bc.png",
   "px": 512
  },
- "📆|3d-animated 3d 2d system": {
+ "📆|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/tear-off-calendar_1f4c6.png",
   "px": 512
  },
- "📑|3d-animated 3d 2d system": {
+ "📑|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/bookmark-tabs_1f4d1.png",
   "px": 512
  },
- "📣|3d-animated 3d 2d system": {
+ "📣|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/megaphone_1f4e3.png",
   "px": 512
  },
- "🕵️‍♂️|3d-animated 3d 2d system": {
+ "🕵️‍♂️|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -113,7 +118,7 @@
   "path": "assets/Man detective/Default/animated/man_detective_animated_default.png",
   "name": "man-detective"
  },
- "😉|3d-animated 3d 2d system": {
+ "😉|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -121,7 +126,7 @@
   "path": "assets/Winking face/animated/winking_face_animated.png",
   "name": "winking-face"
  },
- "😋|3d-animated 3d 2d system": {
+ "😋|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -129,7 +134,7 @@
   "path": "assets/Face savoring food/animated/face_savoring_food_animated.png",
   "name": "face-savoring-food"
  },
- "😎|3d-animated 3d 2d system": {
+ "😎|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -137,7 +142,7 @@
   "path": "assets/Smiling face with sunglasses/animated/smiling_face_with_sunglasses_animated.png",
   "name": "smiling-face-with-sunglasses"
  },
- "😪|3d-animated 3d 2d system": {
+ "😪|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -145,7 +150,7 @@
   "path": "assets/Sleepy face/animated/sleepy_face_animated.png",
   "name": "sleepy-face"
  },
- "😮‍💨|3d-animated 3d 2d system": {
+ "😮‍💨|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -153,7 +158,7 @@
   "path": "assets/Face exhaling/animated/face_exhaling_animated.png",
   "name": "face-exhaling"
  },
- "😲|3d-animated 3d 2d system": {
+ "😲|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -161,7 +166,7 @@
   "path": "assets/Astonished face/animated/astonished_face_animated.png",
   "name": "astonished-face"
  },
- "😸|3d-animated 3d 2d system": {
+ "😸|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -169,7 +174,7 @@
   "path": "assets/Grinning cat with smiling eyes/animated/grinning_cat_with_smiling_eyes_animated.png",
   "name": "grinning-cat-with-smiling-eyes"
  },
- "🤔|3d-animated 3d 2d system": {
+ "🤔|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -177,14 +182,14 @@
   "path": "assets/Thinking face/animated/thinking_face_animated.png",
   "name": "thinking-face"
  },
- "🥡|3d-animated 3d 2d system": {
+ "🥡|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/takeout-box_1f961.png",
   "px": 512
  },
- "🥱|3d-animated 3d 2d system": {
+ "🥱|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -192,7 +197,7 @@
   "path": "assets/Yawning face/animated/yawning_face_animated.png",
   "name": "yawning-face"
  },
- "🥳|3d-animated 3d 2d system": {
+ "🥳|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -200,7 +205,7 @@
   "path": "assets/Partying face/animated/partying_face_animated.png",
   "name": "partying-face"
  },
- "🥸|3d-animated 3d 2d system": {
+ "🥸|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -208,7 +213,7 @@
   "path": "assets/Disguised face/animated/disguised_face_animated.png",
   "name": "disguised-face"
  },
- "🥹|3d-animated 3d 2d system": {
+ "🥹|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -216,7 +221,7 @@
   "path": "assets/Face holding back tears/animated/face_holding_back_tears_animated.png",
   "name": "face-holding-back-tears"
  },
- "🦉|3d-animated 3d 2d system": {
+ "🦉|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -224,7 +229,7 @@
   "path": "assets/Owl/animated/owl_animated.png",
   "name": "owl"
  },
- "🧐|3d-animated 3d 2d system": {
+ "🧐|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -232,7 +237,7 @@
   "path": "assets/Face with monocle/animated/face_with_monocle_animated.png",
   "name": "face-with-monocle"
  },
- "🧠|3d-animated 3d 2d system": {
+ "🧠|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -240,21 +245,21 @@
   "path": "assets/Brain/animated/brain_animated.png",
   "name": "brain"
  },
- "🧳|3d-animated 3d 2d system": {
+ "🧳|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/luggage_1f9f3.png",
   "px": 512
  },
- "🫖|3d-animated 3d 2d system": {
+ "🫖|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/teapot_1fad6.png",
   "px": 512
  },
- "🫠|3d-animated 3d 2d system": {
+ "🫠|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",
@@ -262,35 +267,35 @@
   "path": "assets/Melting face/animated/melting_face_animated.png",
   "name": "melting-face"
  },
- "🫡|3d-animated 3d 2d system": {
+ "🫡|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-teams/400/saluting-face_1fae1.png",
   "px": 256
  },
- "🫣|3d-animated 3d 2d system": {
+ "🫣|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-teams/400/face-with-peeking-eye_1fae3.png",
   "px": 256
  },
- "🫩|3d-animated 3d 2d system": {
+ "🫩|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/face-with-bags-under-eyes_1fae9.png",
   "px": 512
  },
- "🫪|3d-animated 3d 2d system": {
+ "🫪|3d-animated 3d 2d google system": {
   "style": "3d",
   "source": "emojipedia",
   "kind": "link",
   "url": "https://em-content.zobj.net/source/microsoft-3D-fluent/473/distorted-face_1faea.png",
   "px": 512
  },
- "🫵|3d-animated 3d 2d system": {
+ "🫵|3d-animated 3d 2d google system": {
   "style": "3d-animated",
   "source": "microsoft",
   "kind": "ms-anim",

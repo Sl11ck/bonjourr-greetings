@@ -34,8 +34,8 @@ DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 DAYCODE = {'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sun': 6, 'Sat': 7}   # widths in the probe font
 U = 1                                         # probe: px per hour / weekday code / minute
 
-ALL_STYLES = ('3d-animated', '3d', '2d', 'system')
-ALL_SOURCES = ('microsoft', 'emojipedia')
+ALL_STYLES = ('3d-animated', '3d', '2d', 'google', 'system')
+ALL_SOURCES = ('microsoft', 'emojipedia', 'fluent-flags', 'noto')
 UA = {'User-Agent': 'Mozilla/5.0 (bonjourr-greetings build script)'}
 WARNINGS = []
 
@@ -192,8 +192,13 @@ def runs(cells):
 # ── emoji lookup ─────────────────────────────────────────────────────────────
 # microsoft  = github.com/microsoft/fluentui-emoji(-animated), MIT: downloaded, resized, committed to emoji/
 # emojipedia = Emojipedia's newest Microsoft designs: linked to (not re-hosted; they carry no open licence)
+# fluent-flags = country/subdivision flags Microsoft never drew, built here in its 3D slab style (see render_flag)
+# noto       = Google's Noto emoji (github.com/googlefonts/noto-emoji, Apache 2.0), the same 3D designs Emojipedia shows
+#              for Google: downloaded, resized, committed to emoji/. The fallback for emoji Microsoft hasn't drawn yet.
 MS_REPOS = {'static': 'fluentui-emoji', 'animated': 'fluentui-emoji-animated'}
-EP_VENDOR = {'3d-animated': 'microsoft-teams', '3d': 'microsoft-3D-fluent', '2d': 'microsoft'}
+EP_VENDOR = {'3d-animated': 'microsoft-teams', '3d': 'microsoft-3D-fluent', '2d': 'microsoft', 'google': 'google'}
+NOTO_REPO = 'https://github.com/googlefonts/noto-emoji'
+NOTO_DIR = '3D/png/512'
 
 
 def norm(e):
@@ -258,6 +263,27 @@ def ms_download(repo, path):
     return data
 
 
+_noto = {}
+def noto_index():
+    """(commit, {file names}) of Noto's 3D 512 px PNGs, from a blob-less clone (names only, ~2 s)."""
+    if _noto:
+        return _noto['ref'], _noto['names']
+    d = CACHE / 'repos' / 'noto-emoji'
+    if REFRESH and d.exists():
+        shutil.rmtree(d)
+    if not d.exists():
+        d.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(['git', 'clone', '-q', '--depth', '1', '--filter=blob:none', '--no-checkout', NOTO_REPO, str(d)], check=True)
+    run = lambda *a: subprocess.run(['git', '-C', str(d), *a], check=True, capture_output=True, text=True).stdout
+    _noto['ref'] = run('rev-parse', 'HEAD').strip()
+    _noto['names'] = {f.rsplit('/', 1)[-1] for f in run('ls-tree', '-r', '--name-only', 'HEAD', NOTO_DIR + '/').split()}
+    return _noto['ref'], _noto['names']
+
+
+def noto_name(e):
+    return 'emoji_u' + '_'.join(f'{ord(c):04x}' for c in norm(e)) + '.png'
+
+
 _ep = {}
 def emojipedia(e):
     """Newest Emojipedia image per Microsoft vendor: {'microsoft-teams': url, ...}."""
@@ -270,12 +296,35 @@ def emojipedia(e):
         _ep[e] = {}; return {}
     slug = final.rstrip('/').rsplit('/', 1)[-1]
     best = {}
-    for vendor, ver, name in re.findall(r'source/(microsoft(?:-teams|-3D-fluent)?)/(\d+)/([\w.-]+\.png)', page):
+    for vendor, ver, name in re.findall(r'source/(microsoft(?:-teams|-3D-fluent)?|google)/(\d+)/([\w.-]+\.png)', page):
         score = (name.startswith(slug + '_'), int(ver))           # prefer this page's emoji, then newest
         if vendor not in best or score > best[vendor][0]:
             best[vendor] = (score, f'https://em-content.zobj.net/source/{vendor}/{ver}/{name}')
     _ep[e] = {v: u for v, (s, u) in best.items() if s[0]}
     return _ep[e]
+
+
+FLAG_ICONS = 'https://cdn.jsdelivr.net/npm/flag-icons@7.5.0/flags/4x3/'          # MIT
+TWEMOJI = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.3/assets/svg/'         # CC-BY 4.0 (only where flag-icons has none)
+FLAG_ALIAS = {'ac': 'sh-ac', 'ta': 'sh-ta', 'ea': 'es'}     # flags that share another flag's design in flag-icons
+FLAG_TWEMOJI = {'cq'}                                        # Sark (Emoji 16.0) is not in flag-icons
+
+
+def flag_code(e):
+    """'mt' for 🇲🇹, 'gb-eng' for 🏴󠁧󠁢󠁥󠁮󠁧󠁿, else None."""
+    c = [ord(x) for x in norm(e)]
+    if len(c) == 2 and all(0x1F1E6 <= x <= 0x1F1FF for x in c):
+        return ''.join(chr(x - 0x1F1E6 + 97) for x in c)
+    if len(c) > 3 and c[0] == 0x1F3F4 and c[-1] == 0xE007F and all(0xE0020 < x < 0xE007F for x in c[1:-1]):
+        t = ''.join(chr(x - 0xE0000) for x in c[1:-1])
+        return f'{t[:2]}-{t[2:]}'
+    return None
+
+
+def flag_url(code):
+    if code in FLAG_TWEMOJI:
+        return TWEMOJI + '-'.join(f'{0x1F1E6 + ord(x) - 97:x}' for x in code) + '.svg'
+    return FLAG_ICONS + FLAG_ALIAS.get(code, code) + '.svg'
 
 
 def image_info(data):
@@ -299,6 +348,23 @@ def candidate(e, style, source):
             if path:
                 return {'kind': 'ms-svg', 'repo': MS_REPOS['static'], 'path': path, 'name': slugify(folder)}
         return None
+    if source == 'noto':
+        if style != 'google':
+            return None
+        ref, names = noto_index()
+        name = noto_name(e)
+        if name not in names:
+            return None
+        return {'kind': 'noto', 'ref': ref, 'path': f'{NOTO_DIR}/{name}', 'name': 'noto-' + name[7:-4].replace('_', '-')}
+    if source == 'fluent-flags':
+        code = flag_code(e)
+        if style != '3d' or not code:
+            return None
+        try:
+            http(flag_url(code))
+        except Exception:
+            return None                                # no artwork for this flag
+        return {'kind': 'gen-flag', 'code': code, 'url': flag_url(code), 'name': f'flag-{code}'}
     url = emojipedia(e).get(EP_VENDOR[style])
     if not url:
         return None
@@ -353,6 +419,8 @@ def files_for(res):
         return [f'emoji/{res["name"]}-3d@{s:g}x.avif' for s in SCALES]
     if res['kind'] == 'ms-svg':
         return [f'emoji/{res["name"]}-2d.svg']
+    if res['kind'] in ('gen-flag', 'noto'):
+        return [f'emoji/{res["name"]}@{s:g}x.avif' for s in SCALES]
     return []
 
 
@@ -372,6 +440,18 @@ def up_to_date(res):
 
 def source_file(res):
     CACHE.mkdir(parents=True, exist_ok=True)
+    if res['kind'] == 'noto':
+        f = CACHE / ('noto__' + res['path'].rsplit('/', 1)[-1])
+        if FORCE or not f.exists():
+            print('  download', res['path'], flush=True)
+            f.write_bytes(http(f'https://raw.githubusercontent.com/googlefonts/noto-emoji/{res["ref"]}/{res["path"]}')[0])
+        return f
+    if res['kind'] == 'gen-flag':
+        f = CACHE / ('flag__' + res['url'].rsplit('/', 1)[-1])
+        if FORCE or not f.exists():
+            print('  download', res['url'], flush=True)
+            f.write_bytes(http(res['url'])[0])
+        return f
     f = CACHE / re.sub(r'[^\w.-]', '_', res['repo'] + '__' + res['path'])
     if FORCE or not f.exists():
         print('  download', res['path'], flush=True)
@@ -379,12 +459,134 @@ def source_file(res):
     return f
 
 
+def polyline(d):
+    """Points of a straight-line SVG path (M/L/H/V/Z, absolute or relative)."""
+    pts, x, y = [], 0.0, 0.0
+    for cmd, args in re.findall(r'([MLHVZmlhvz])([^MLHVZmlhvz]*)', d):
+        n = [float(v) for v in re.findall(r'-?\d*\.?\d+(?:e-?\d+)?', args)]
+        rel = cmd.islower(); c = cmd.upper()
+        if c in 'ML':
+            for i in range(0, len(n), 2):
+                x, y = (x + n[i], y + n[i + 1]) if rel else (n[i], n[i + 1]); pts.append((x, y))
+        elif c == 'H':
+            for v in n: x = x + v if rel else v; pts.append((x, y))
+        elif c == 'V':
+            for v in n: y = y + v if rel else v; pts.append((x, y))
+    return pts
+
+
+def render_pennant(svg, G, Hh, slab, corner=5.0, notch=0.5, ss=4):
+    """🇳🇵 Nepal, the one flag that isn't a rectangle: its own outline, rounded like the slab, lit like the slab.
+
+    Every point of the pennant is rounded with the slab's corner radius plus the border's width, and the inside edge
+    of the blue border runs parallel to the outside edge, so the red field's corners match the slab's corners.
+    The notch is only just softened (`notch` px), so it stays crisp."""
+    import numpy as np, resvg_py
+    from PIL import Image, ImageDraw
+    from scipy.ndimage import distance_transform_edt as edt, gaussian_filter
+    x0, y0, x1, y1 = slab; N = 256 * ss
+    m = re.search(r'fill="(#[0-9a-fA-F]{3,6})" stroke="(#[0-9a-fA-F]{3,6})" stroke-width="([\d.]+)" d="([^"]+)"', svg)
+    red, blue, sw, pts = m[1], m[2], float(m[3]), polyline(m[4])
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    xmin, xmax, ymin, ymax = min(xs) - sw / 2, max(xs) + sw / 2, min(ys) - sw / 2, max(ys) + sw / 2
+    s = (y1 - y0) * ss / (ymax - ymin)                              # the outer edge fills the slab's height
+    ox, oy = (N - (xmax - xmin) * s) / 2, y0 * ss                    # centred
+    line = Image.new('L', (N, N), 0)
+    ImageDraw.Draw(line).polygon([(ox + (x - xmin) * s, oy + (y - ymin) * s) for x, y in pts], fill=255)
+    line = np.asarray(line) > 127
+    w = sw * s                                                       # border width
+    outer = line | (edt(~line) <= w / 2)
+    r = corner * ss + w
+    outer = edt(~(edt(outer) > r)) <= r                              # round the convex points
+    rn = r if notch is None else notch * ss                         # the notch can be rounded less than the points
+    outer = edt(edt(~outer) <= rn) > rn                              # round the notch
+    inner = edt(outer) > w                                           # inside edge of the border, parallel to the outside
+    hexrgb = lambda h: [int(h.lstrip('#')[i:i + 2] if len(h) == 7 else h[1 + i // 2] * 2, 16) for i in (0, 2, 4)]
+    rgb = np.empty((N, N, 3)); rgb[:] = hexrgb(blue); rgb[inner] = hexrgb(red)
+    for d in re.findall(r'<path fill="#fff" d="([^"]+)"', svg):    # sun and moon, same transform
+        em = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{N}" height="{N}" viewBox="0 0 {N} {N}"><g transform="'
+              f'translate({ox:.3f} {oy:.3f}) scale({s:.5f}) translate({-xmin:.3f} {-ymin:.3f})"><path fill="#fff" d="{d}"/></g></svg>')
+        e = np.asarray(Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=em)))).convert('RGBA'), float)
+        rgb = rgb * (1 - e[..., 3:] / 255) + e[..., :3] * (e[..., 3:] / 255)
+    a = outer.astype(float)
+    shrink = lambda img: np.asarray(Image.fromarray(np.asarray(img, 'float32')).resize((256, 256), Image.BOX), float)
+    al = shrink(a)
+    base = np.dstack([shrink(rgb[..., c] * a) for c in range(3)]) / np.maximum(al, 1e-6)[..., None]
+    dt = edt(outer)
+    gy, gx = np.gradient(gaussian_filter(dt, ss)); nrm = np.hypot(gx, gy) + 1e-9
+    nx, ny = shrink(-gx / nrm), shrink(-gy / nrm)                    # outward normal of the nearest edge
+    dist = shrink(dt) / ss
+    wts = np.stack([np.maximum(0, -ny), np.maximum(0, ny), np.maximum(0, -nx), np.maximum(0, nx)])
+    tot = wts.sum(0); wts = np.where(tot > 1e-3, wts / np.maximum(tot, 1e-6), 0.25)
+    t = np.clip((dist - 10) / 8, 0, 1); wts = wts * (1 - t) + 0.25 * t
+    k = np.clip(dist, 0, G.shape[1] - 1).astype(int)
+    gain = (wts * G[np.arange(4)[:, None, None], k]).sum(0); off = (wts * Hh[np.arange(4)[:, None, None], k]).sum(0)
+    out = np.clip(base / 255 * gain[..., None] + off[..., None], 0, 1) * 255
+    return Image.fromarray(np.dstack([out, al * 255]).round().astype('uint8'), 'RGBA')
+
+
+def render_flag(svg_path, twemoji=False):
+    """A flag in Microsoft's 3D Fluent slab style, as a 256x256 RGBA image.
+
+    Microsoft's coloured flags (🏳️‍🌈 🏳️‍⚧️ 🏴‍☠️) are rounded slabs lit the same way: a bright rim on the right and
+    top, a soft darker bevel at the bottom and left. src/flag-template.json holds that lighting, measured from
+    those three flags by src/tools/derive_flag_template.py; src/flag-slab-mask.png is their outline. The flag's
+    own colours come from its SVG artwork, unchanged."""
+    import numpy as np, resvg_py
+    from PIL import Image
+    tpl = json.loads((ROOT / 'src/flag-template.json').read_text(encoding='utf-8'))
+    x0, y0, x1, y1 = tpl['slab']; G = np.array(tpl['g']); Hh = np.array(tpl['h'])
+    mask = np.asarray(Image.open(ROOT / 'src/flag-slab-mask.png'), float) / 255
+    w, h = x1 - x0, y1 - y0
+    svg = Path(svg_path).read_text(encoding='utf-8')
+    if 'id="flag-icons-np"' in svg:
+        return render_pennant(svg, G, Hh, tpl['slab'])
+    if twemoji:   # Twemoji draws flags at 36x26 inside a 36x36 square: keep just the flag
+        svg = re.sub(r'viewBox="[^"]*"', 'viewBox="0 5 36 26" preserveAspectRatio="none"', svg, count=1)
+        art = Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=svg, width=w * 4)))).convert('RGBA')
+        art = np.asarray(art.resize((w, h), Image.LANCZOS), float)
+        for _ in range(12):   # Twemoji rounds its own corners: grow the colours outward so ours decide the shape
+            hole = art[..., 3] < 250
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nb = np.roll(art, (dy, dx), (0, 1))
+                take = hole & (nb[..., 3] >= 250)
+                art[take] = nb[take]; hole &= ~take
+        art[..., 3] = 255
+        art = Image.fromarray(art.astype('uint8'), 'RGBA')
+    else:         # flag-icons draws 4:3: squeeze the whole design into the 7:5 slab, so no border or stripe is cut
+        art = Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=svg, width=w * 4, height=w * 3)))).convert('RGBA')
+        art = np.asarray(art.resize((w, h), Image.LANCZOS), float)
+        art[..., 3] = 255     # shapes drawn edge to edge leave faint see-through seams; the slab decides the outline
+        art = Image.fromarray(art.astype('uint8'), 'RGBA')
+    base = np.zeros((256, 256, 4)); base[y0:y1, x0:x1] = np.asarray(art, float)
+    yy, xx = np.mgrid[0:256, 0:256]
+    dist = np.stack([yy - y0, y1 - 1 - yy, xx - x0, x1 - 1 - xx]).clip(0, None).astype(float)
+    shape = base[..., 3] / 255 * mask
+    L = G.shape[1] - 1; k = dist.clip(0, L).astype(int)
+    # Inside: one smooth gradient between the four sides' inner levels (no diagonal seams from the corners).
+    ty = ((yy - y0) / (y1 - 1 - y0)).clip(0, 1); tx = ((xx - x0) / (x1 - 1 - x0)).clip(0, 1)
+    gain = ((G[0, L] * (1 - ty) + G[1, L] * ty) + (G[2, L] * (1 - tx) + G[3, L] * tx)) / 2
+    off = ((Hh[0, L] * (1 - ty) + Hh[1, L] * ty) + (Hh[2, L] * (1 - tx) + Hh[3, L] * tx)) / 2
+    # Edges: each side's bevel on top of that, blended where two sides meet at a corner.
+    wts = np.exp(-dist / 4); wts /= wts.sum(0)
+    sides = np.arange(4)[:, None, None]
+    gain = gain + (wts * (G[sides, k] - G[:, L][:, None, None])).sum(0)
+    off = off + (wts * (Hh[sides, k] - Hh[:, L][:, None, None])).sum(0)
+    blur = lambda a: sum(c * np.roll(a, i - 2, ax) for ax in (0, 1) for i, c in enumerate((1, 4, 6, 4, 1))) / 32
+    gain, off = blur(gain), blur(off)
+    rgb = np.clip(base[..., :3] / 255 * gain[..., None] + off[..., None], 0, 1) * 255
+    return Image.fromarray(np.dstack([rgb, shape * 255]).round().astype('uint8'), 'RGBA')
+
+
 def encode(res):
     """Lanczos-resize every frame to each screen scale; save as AVIF (4:4:4, full colour)."""
     from PIL import Image, ImageSequence
-    src = Image.open(source_file(res))
-    frames = [(f.convert('RGBA').copy(), int(round(f.info.get('duration', 42)))) for f in ImageSequence.Iterator(src)]
-    if res['kind'] == 'ms-3d':
+    if res['kind'] == 'gen-flag':
+        frames = [(render_flag(source_file(res), twemoji=res['url'].startswith(TWEMOJI)), 0)]
+    else:
+        src = Image.open(source_file(res))
+        frames = [(f.convert('RGBA').copy(), int(round(f.info.get('duration', 42)))) for f in ImageSequence.Iterator(src)]
+    if res['kind'] in ('ms-3d', 'noto'):
         frames = frames[:1]
     for f, s in zip(files_for(res), SCALES):
         px = round(PX * s)
@@ -405,7 +607,7 @@ def build_images(lock):
             out = ROOT / files_for(res)[0]
             if FORCE or not out.exists():
                 out.write_bytes(source_file(res).read_bytes())
-        elif res['kind'] in ('ms-anim', 'ms-3d') and not up_to_date(res):
+        elif res['kind'] in ('ms-anim', 'ms-3d', 'gen-flag', 'noto') and not up_to_date(res):
             todo.append(res)
     if todo:
         if not features.check('avif'):
@@ -427,7 +629,7 @@ def build_images(lock):
 
 
 def image_css(res):
-    if res['kind'] in ('ms-anim', 'ms-3d'):
+    if res['kind'] in ('ms-anim', 'ms-3d', 'gen-flag', 'noto'):
         return 'image-set(' + ','.join(f'url({f}) {s:g}x' for f, s in zip(files_for(res), SCALES)) + ')'
     if res['kind'] == 'ms-svg':
         return f'image-set(url({files_for(res)[0]}) {32 / PX:.4g}x)'      # Microsoft's SVGs are 32x32
@@ -435,7 +637,7 @@ def image_css(res):
 
 
 def img_src(res):
-    if res['kind'] in ('ms-anim', 'ms-3d', 'ms-svg'):
+    if res['kind'] in ('ms-anim', 'ms-3d', 'ms-svg', 'gen-flag', 'noto'):
         return files_for(res)[0]
     return res['url']
 
@@ -637,7 +839,7 @@ def export_schedule(sched):
 
 def check_config():
     bad = [s for s in STYLES if s not in ALL_STYLES]
-    bad += [f'emoji_sources.{st}' for st in SOURCES if st not in ALL_STYLES[:3]]
+    bad += [f'emoji_sources.{st}' for st in SOURCES if st not in ALL_STYLES[:4]]
     bad += [f'source "{s}"' for v in SOURCES.values() for s in v if s not in ALL_SOURCES]
     if bad:
         sys.exit(f'src/config.json: unknown {", ".join(bad)}. Styles: {", ".join(ALL_STYLES)}; sources: {", ".join(ALL_SOURCES)}')

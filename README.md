@@ -23,7 +23,7 @@ One row = one greeting at certain times:
 | `days` | Which days. Ranges wrap around the week. | `*`, `Mon`, `Mon-Fri`, `weekdays`, `weekend`, `"Sat,Sun"` |
 | `hours` | Which hours, start to end; the end hour itself is not included. Ranges can wrap past midnight, and you can list several. | `*`, `05-12`, `21-05`, `"05-12 17-21"` |
 | `weight` | How likely, compared with the other greetings allowed at that hour. `2` is twice as likely as `1`; `0` turns a row off; blank counts as `1`. | `2`, `0.5` |
-| `style` | Optional. Overrides the emoji style order for this row. | `3d`, `2d`, `system`, `"3d 2d"` |
+| `style` | Optional. Overrides the emoji style order for this row. | `3d`, `2d`, `google`, `system`, `"3d google"` |
 
 - **Chances:** for every weekday and hour, the weights of all the rows that apply are turned into 60 slots, one per minute. A tab shows the slot for the minute it was opened. So a weight that makes up 1/4 of an hour's total shows 15 minutes in every 60.
 - **Same greeting, different chances:** add one row per time block, as `Coffee and Crunch time?` does.
@@ -35,22 +35,35 @@ One row = one greeting at certain times:
 Set in `src/config.json`:
 
 ```json
-"emoji_styles": ["3d-animated", "3d", "2d", "system"],
+"emoji_styles": ["3d-animated", "3d", "2d", "google", "system"],
 "emoji_sources": {
   "3d-animated": ["microsoft", "emojipedia"],
-  "3d":          ["emojipedia", "microsoft"],
-  "2d":          ["emojipedia", "microsoft"]
+  "3d":          ["emojipedia", "microsoft", "fluent-flags"],
+  "2d":          ["emojipedia", "microsoft"],
+  "google":      ["noto", "emojipedia"]
 }
 ```
 
-- **`emoji_styles`** is the order styles are tried in. Each emoji gets the first style that has an image. `system` means the plain emoji character in your system font (Segoe UI Emoji on Windows), and it always works.
+- **`emoji_styles`** is the order styles are tried in. Each emoji gets the first style that has an image. `google` is the fallback for emoji Microsoft hasn't drawn yet, e.g. all of Emoji 18.0 until Windows adds it. `system` means the plain emoji character in your system font (Segoe UI Emoji on Windows); Windows can't draw anything newer than its own emoji update.
 - **`emoji_sources`** is, for each style, the order in which sources are asked:
 
 | Source | 3d-animated | 3d | 2d | How it's used |
 |---|---|---|---|---|
 | `microsoft` | [fluentui-emoji-animated](https://github.com/microsoft/fluentui-emoji-animated) | [fluentui-emoji](https://github.com/microsoft/fluentui-emoji) 3D | fluentui-emoji Color (SVG) | MIT-licensed, so it's downloaded, resized to every screen scale and committed to `emoji/`. Always smooth. |
 | `emojipedia` | Microsoft Teams animations | Microsoft 3D Fluent (newest Windows 11 release) | Microsoft (Windows 11 Segoe UI Emoji) | Newest designs, linked to (no open licence, so not re-hosted). Firefox draws linked animations a little softer. |
+| `fluent-flags` | — | Country and subdivision flags, which Microsoft never drew | — | Built here in Microsoft's 3D Fluent flag style (see below) and committed to `emoji/`. |
 
+For the `google` style:
+
+| Source | What | How it's used |
+|---|---|---|
+| `noto` | [googlefonts/noto-emoji](https://github.com/googlefonts/noto-emoji), 3D set: every Emoji 18.0 entry. These are the same designs Emojipedia shows for Google. | Open licence, so it's downloaded, resized to every screen scale and committed to `emoji/`. |
+| `emojipedia` | [Emojipedia's Google designs](https://emojipedia.org/google) | Linked to. Only used if Noto lacks an emoji. |
+
+- **Flags (`fluent-flags`):** Microsoft's own coloured flags (🏳️‍🌈 🏳️‍⚧️ 🏴‍☠️) are rounded slabs that all share the same bevel and lighting.
+    - `src/tools/derive_flag_template.py` measures that lighting from those three MIT images into `src/flag-template.json` and `src/flag-slab-mask.png`.
+    - The build applies it to each flag's artwork: [flag-icons](https://github.com/lipis/flag-icons) (MIT), or Twemoji (CC-BY 4.0) for 🇨🇶 Sark.
+    - The flag's colours are left exactly as designed. All 262 Emoji flags are covered.
 - **Lookup results are saved** in `src/emoji-lock.json`, so builds are repeatable and fast.
 - **Precedence changes re-check everything:** changing `emoji_styles` or `emoji_sources` makes the next build look every emoji up again.
 - **To check for newer designs:** go to *Actions → Build → Run workflow*, tick *Look up every emoji again*, and run it.
@@ -96,4 +109,6 @@ Bonjourr's custom CSS can't read the time. A second, hidden world clock (the "pr
 
 - **Code:** MIT.
 - **Images in `emoji/`:** © Microsoft, MIT (see `emoji/LICENSE-microsoft-fluentui-emoji.txt`).
+- **Generated flags:** artwork from flag-icons (MIT) and Twemoji (CC-BY 4.0), credited in `emoji/LICENSE-flags.txt`.
+- **Noto images:** © Google, open licence, see `emoji/LICENSE-noto-emoji.txt`.
 - **Emojipedia images:** linked to, not part of this repository.

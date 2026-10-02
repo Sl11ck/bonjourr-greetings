@@ -1,10 +1,11 @@
 {
   "default_name": "friend",
-  "emoji_styles": ["3d-animated", "3d", "2d", "system"],
+  "emoji_styles": ["3d-animated", "3d", "2d", "google", "system"],
   "emoji_sources": {
     "3d-animated": ["microsoft", "emojipedia"],
-    "3d": ["emojipedia", "microsoft"],
-    "2d": ["emojipedia", "microsoft"]
+    "3d": ["emojipedia", "microsoft", "fluent-flags"],
+    "2d": ["emojipedia", "microsoft"],
+    "google": ["noto", "emojipedia"]
   },
   "emoji_size_css_px": 52,
   "emoji_scales": [1, 1.25, 1.5, 1.75, 2, 2.5],
